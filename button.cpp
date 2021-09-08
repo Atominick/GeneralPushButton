@@ -76,7 +76,7 @@ uint8_t Button::isMod(Mod mod_to_check) {
         return 0;
 }
 
-uint8_t Button::clearState() {
+void Button::clearState() {
     state = State::NO_STATE;
     mods = Mod::NO_MODS;
 }
