@@ -8,15 +8,34 @@
 #define BUTTON_TICKING_FREQUENCY 100    // in Hz
 #endif
 
-#define TO_TICKS(s) int(s * (1000 / BUTTON_TICKING_FREQUENCY))
+#define MS_TO_TICKS(s) int(s * (BUTTON_TICKING_FREQUENCY / 1000.))
 
 // Delays in ms
-#define CLICK_DELAY TO_TICKS(60)    // Must exceed debounce time
-#define PRESS_DELAY TO_TICKS(500)
-#define CLAMPED_DELAY TO_TICKS(2000)
-#define LONG_PRESS_DELAY TO_TICKS(2010)
-#define MULTIPLE_CLICKING_DELAY TO_TICKS(150)
-#define TIMEOUT_DELAY TO_TICKS(10000)
+
+#ifndef CLICK_DELAY
+#define CLICK_DELAY MS_TO_TICKS(60)    // Must exceed debounce time
+#endif
+
+#ifndef PRESS_DELAY
+#define PRESS_DELAY MS_TO_TICKS(500)
+#endif
+
+#ifndef CLAMPED_DELAY
+#define CLAMPED_DELAY MS_TO_TICKS(2000)
+#endif
+
+#ifndef LONG_PRESS_DELAY
+#define LONG_PRESS_DELAY MS_TO_TICKS(2010)
+#endif
+
+#ifndef MULTIPLE_CLICKING_DELAY
+#define MULTIPLE_CLICKING_DELAY MS_TO_TICKS(150)
+#endif
+
+#ifndef TIMEOUT_DELAY
+#define TIMEOUT_DELAY MS_TO_TICKS(10000)
+#endif
+
 
 
 
@@ -62,7 +81,6 @@ private:
 
     uint8_t clicked_counter = 0;
     uint32_t released_time = 0;
-    uint32_t pressed_time = 0;
     uint8_t freezed = 0;
 
     // For clamping proportional with time
@@ -70,6 +88,7 @@ private:
     volatile Mod mods = Mod::NO_MODS;
 
 public:
+    uint32_t pressed_time = 0;
     volatile State state = State::NO_STATE;
 };
 
