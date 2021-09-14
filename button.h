@@ -69,8 +69,8 @@ public:
 
     void reset();
     void freeze();
-    uint8_t isMod(Mod mod_to_check);
-    void clearState();
+    uint8_t is_mod(Mod mod_to_check);
+    void clear_state();
 
     void tick();
 

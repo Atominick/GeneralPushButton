@@ -69,14 +69,14 @@ void Button::tick() {
     }
 }
 
-uint8_t Button::isMod(Mod mod_to_check) {
+uint8_t Button::is_mod(Mod mod_to_check) {
     if((int)mods & (int)mod_to_check)
         return 1;
     else
         return 0;
 }
 
-void Button::clearState() {
+void Button::clear_state() {
     state = State::NO_STATE;
     mods = Mod::NO_MODS;
 }
@@ -85,7 +85,7 @@ void Button::reset() {
     pressed_time = 0;
     released_time = 0;
     clamped_counter = 0;
-    clearState();
+    clear_state();
 }
 
 void Button::freeze() {
