@@ -9,17 +9,17 @@ void Button::tick() {
         if(!freezed) {
             pressed_time++;
 
-            if(pressed_time == CLICK_DELAY) {
+            if(pressed_time == CLICK_DELAY_IN_TICKS) {
                 state = CLICKED;
-                if(released_time > MULTIPLE_CLICKING_DELAY) {
+                if(released_time > MULTIPLE_CLICK_DELAY_IN_TICKS) {
                     clicked_counter = 0;
                 }
-            } else if(pressed_time == PRESS_DELAY) {
+            } else if(pressed_time == PRESS_DELAY_IN_TICKS) {
                 state = PRESSED;
-            } else if(pressed_time == LONG_PRESS_DELAY) {
+            } else if(pressed_time == LONG_PRESS_DELAY_IN_TICKS) {
                 state = LONG_PRESSED;
-            } else if(pressed_time > TIMEOUT_DELAY) {
-                state = UNCERTAIN; // TimeOut
+            } else if(pressed_time == TIMEOUT_DELAY_IN_TICKS) {
+                mods = (Mod)((int)TIMING_ERROR | (int)mods);
             }
 
             if(pressed_time > CLAMPED_DELAY) {
@@ -35,15 +35,17 @@ void Button::tick() {
             freezed = 0;
         }
 
-        if(pressed_time) {
-            state = UNCERTAIN; // For values smaller then minimum
-
-            if(pressed_time > LONG_PRESS_DELAY) {
+        if(pressed_time) {            
+            if(pressed_time > LONG_PRESS_DELAY_IN_TICKS 
+                    && pressed_time < TIMEOUT_DELAY_IN_TICKS) {
                 state = LONG_PRESS_RELEASED;
-            } else if(pressed_time > PRESS_DELAY) {
+            } else if(pressed_time > PRESS_DELAY_IN_TICKS) {
                 state = PRESS_RELEASED;
-            } else if(pressed_time > CLICK_DELAY) {
+            } else if(pressed_time > CLICK_DELAY_IN_TICKS) {
                 state = CLICK_RELEASED;
+            } else {
+                // For values beyond borders
+                mods = (Mod)((int)TIMING_ERROR | (int)mods);
             }
 
             // Multiple clicking
@@ -76,7 +78,7 @@ uint8_t Button::is_mod(Mod mod_to_check) {
         return 0;
 }
 
-void Button::clear_state() {
+void Button::wipe_status() {
     state = State::NO_STATE;
     mods = Mod::NO_MODS;
 }
@@ -85,7 +87,7 @@ void Button::reset() {
     pressed_time = 0;
     released_time = 0;
     clamped_counter = 0;
-    clear_state();
+    wipe_status();
 }
 
 void Button::freeze() {

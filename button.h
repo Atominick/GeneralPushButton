@@ -8,35 +8,41 @@
 #define BUTTON_TICKING_FREQUENCY 100    // in Hz
 #endif
 
-#define MS_TO_TICKS(s) int(s * (BUTTON_TICKING_FREQUENCY / 1000.))
-
 // Delays in ms
-
 #ifndef CLICK_DELAY
-#define CLICK_DELAY MS_TO_TICKS(60)    // Must exceed debounce time
+#define CLICK_DELAY 60    // Must exceed debounce time
 #endif
 
 #ifndef PRESS_DELAY
-#define PRESS_DELAY MS_TO_TICKS(500)
+#define PRESS_DELAY 450
 #endif
 
 #ifndef CLAMPED_DELAY
-#define CLAMPED_DELAY MS_TO_TICKS(2000)
+#define CLAMPED_DELAY 2000
 #endif
 
 #ifndef LONG_PRESS_DELAY
-#define LONG_PRESS_DELAY MS_TO_TICKS(2010)
+#define LONG_PRESS_DELAY 2010
 #endif
 
-#ifndef MULTIPLE_CLICKING_DELAY
-#define MULTIPLE_CLICKING_DELAY MS_TO_TICKS(150)
+#ifndef MULTIPLE_CLICK_DELAY
+#define MULTIPLE_CLICK_DELAY 150
 #endif
 
 #ifndef TIMEOUT_DELAY
-#define TIMEOUT_DELAY MS_TO_TICKS(10000)
+#define TIMEOUT_DELAY 5000
 #endif
 
 
+/***************************************************************************/
+#define MS_TO_TICKS(s) (int((float) s / (1000. / BUTTON_TICKING_FREQUENCY)))
+
+#define CLICK_DELAY_IN_TICKS             MS_TO_TICKS(CLICK_DELAY)
+#define PRESS_DELAY_IN_TICKS             MS_TO_TICKS(PRESS_DELAY)
+#define CLAMPED_DELAY_IN_TICKS           MS_TO_TICKS(CLAMPED_DELAY)
+#define LONG_PRESS_DELAY_IN_TICKS        MS_TO_TICKS(LONG_PRESS_DELAY)
+#define MULTIPLE_CLICK_DELAY_IN_TICKS    MS_TO_TICKS(MULTIPLE_CLICK_DELAY)
+#define TIMEOUT_DELAY_IN_TICKS           MS_TO_TICKS(TIMEOUT_DELAY)
 
 
 class Button
@@ -61,7 +67,8 @@ public:
         NO_MODS = 0x00,
         CLAMPED = 0x01,
         DOUBLE_CLICKED = 0x02,
-        TRIPLE_CLICKED = 0x04
+        TRIPLE_CLICKED = 0x04,
+        TIMING_ERROR = 0x08
     };
 
 public:
@@ -69,8 +76,8 @@ public:
 
     void reset();
     void freeze();
+    void wipe_status();
     uint8_t is_mod(Mod mod_to_check);
-    void clear_state();
 
     void tick();
 
@@ -79,16 +86,17 @@ private:
     const uint32_t register_mask;
     const uint8_t state_when_on;
 
-    uint8_t clicked_counter = 0;
-    uint32_t released_time = 0;
-    uint8_t freezed = 0;
-
     // For clamping proportional with time
     uint32_t clamped_counter = 0;
+    uint8_t clicked_counter = 0;
+
+    uint32_t released_time = 0;
+    uint32_t pressed_time = 0;
+    uint8_t freezed = 0;
+
     volatile Mod mods = Mod::NO_MODS;
 
 public:
-    uint32_t pressed_time = 0;
     volatile State state = State::NO_STATE;
 };
 
