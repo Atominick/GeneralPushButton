@@ -1,23 +1,26 @@
-#include "matrix_keyboard.h"
+#include "keyboards.h"
+
 
 /************************************************************************************/
-// void MatrixKeyboard::init() {
-//     uint16_t output_pins_mask = 0;
-//     uint16_t input_pins_mask = 0;
+template<int XSize, int YSize>
+void MatrixKeyboard<XSize, YSize>::update() {
+    uint8_t button_no = 0;    
+    for(int i = 0; i < XSize; i++) {
+        *config.outputIORegister |= config.inputPinsMasks[i];
+        for(int j = 0; j < YSize; j++) {
+            if(*config.inputIORegister & config.inputPinsMasks[j])
+                key[i][j].setStatus(Button::Status::PUSHED);
+            else
+                key[i][j].setStatus(Button::Status::RELEASED);
 
-//     for(int i = 0; i < config.outputs; i++) {
-//         output_pins_mask |= config.outputPins[i];
-//     }
-//     gpio::configureOutput(config.outputIORegister, output_pins_mask, gpio::SpeedHigh);
-//     // gpio::configurePullUp(config.outputGPIO, output_pins_mask);
+            button_no++;
+        }
+        *config.outputIORegister &= ~config.inputPinsMasks[i];
+    }
+}
 
-//     for(int i = 0; i < config.inputs; i++) {
-//         input_pins_mask |= config.inputPins[i];
-//     }
-//     gpio::configurePullDown(config.inputGPIO, input_pins_mask);
-// } 
-
-void MatrixKeyboard::update() {
+/*
+void AnalogKeyboard::update() {
     uint8_t button_no = 0;
     states = 0;
     
@@ -37,4 +40,5 @@ void MatrixKeyboard::update() {
         *config.outputIORegister &= ~config.inputPinsMasks[i];
 
     }
-}  
+} 
+*/ 
