@@ -44,13 +44,13 @@
 #define MULTIPLE_CLICK_DELAY_IN_TICKS    MS_TO_TICKS(MULTIPLE_CLICK_DELAY)
 #define TIMEOUT_DELAY_IN_TICKS           MS_TO_TICKS(TIMEOUT_DELAY)
 
-
-class Button
+class ButtonBase
 {
 public:
     enum State
     {
         NO_STATE = 0x00,
+
         CLICKED,
         PRESSED,
         LONG_PRESSED,
@@ -58,7 +58,7 @@ public:
         CLICK_RELEASED,
         PRESS_RELEASED,
         LONG_PRESS_RELEASED,
-
+        
         UNCERTAIN,
     };
 
@@ -68,36 +68,67 @@ public:
         CLAMPED = 0x01,
         DOUBLE_CLICKED = 0x02,
         TRIPLE_CLICKED = 0x04,
-        TIMING_ERROR = 0x08
+        TIMEOUT = 0x08
+    };
+
+    enum Status {
+        RELEASED,
+        PUSHED
     };
 
 public:
-    Button(volatile uint32_t *registerToCheck, const uint32_t registerMask, const uint8_t stateWhenOn = 1);
+    ButtonBase();
+    
+    void setStatus(Status status) {
+        this->status = status;
+    }
+    Status getStatus() {
+        return status;
+    }
+    void freeze() {
+        freezed = 1;
+    }
 
     void reset();
-    void freeze();
-    void wipe_status();
-    uint8_t is_mod(Mod mod_to_check);
+    void clearState();
+    uint8_t isMod(Mod mod_to_check);
 
     void tick();
 
 private:
-    volatile uint32_t *register_to_check = nullptr;
-    const uint32_t register_mask;
-    const uint8_t state_when_on;
+    void setMod(Mod mod_to_set);
+    void processRelease();
+    void processPush();
 
-    // For clamping proportional with time
-    uint32_t clamped_counter = 0;
-    uint8_t clicked_counter = 0;
+protected:
+    Status status = RELEASED;
 
-    uint32_t released_time = 0;
-    uint32_t pressed_time = 0;
     uint8_t freezed = 0;
-
+    uint32_t pushed_time = 0;
+    uint32_t released_time = 0;
     volatile Mod mods = Mod::NO_MODS;
+
 
 public:
     volatile State state = State::NO_STATE;
+
+    uint32_t clamped_counter = 0;
+    uint8_t clicked_counter = 0;
+};
+
+
+/****************************************************************************************/
+class Button : public ButtonBase
+{   
+public:
+    Button(volatile uint32_t* const registerToCheck, const uint32_t registerMask, const uint8_t stateWhenOn=1);
+
+    void tick();
+
+private:
+    volatile uint32_t* const register_to_check;
+    const uint32_t register_mask;
+    const uint8_t state_when_on;
 };
 
 #endif // BUTTON_H_
