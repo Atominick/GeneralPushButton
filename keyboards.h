@@ -1,25 +1,25 @@
 
-#ifndef KEYBOARS_H
-#define KEYBOARS_H
+#ifndef KEYBOARDS_H
+#define KEYBOARDS_H
 
 #include <stdint.h>
 #include "button.h"
 
+#include <steam/debug.h>
 
-template<int XSize, int YSize>
+/*
+template <int XSize, int YSize>
 class KeyboardBase
 {
 public:
     virtual void update();
 
 public:
-    ButtonBase key[XSize][YSize];
 };
+*/
 
-
-/****************************************************************************************/
-template<int XSize, int YSize>
-class MatrixKeyboard : public Keyboard<XSize, YSize>
+template <int XSize, int YSize>
+class MatrixKeyboard
 {
 public:
     struct Config {
@@ -33,14 +33,39 @@ public:
     MatrixKeyboard(const Config &config)
         : config(config) {}
 
-    virtual void initPins();
-    void update() override;
+    // Can`t move to .cpp couse of C++ restrictions https://stackoverflow.com/questions/8752837/undefined-reference-to-template-class-constructor
+    void update() {
+        for(int i = 0; i < outputs_number; i++) {
+            *config.outputIORegister |= config.outputPinsMasks[i];
+            for(int j = 0; j < inputs_number; j++) {
+                key[j][i].tick();
+
+                if(*config.inputIORegister & config.inputPinsMasks[j]) {
+                    key[j][i].setStatus(Button::Status::PUSHED);
+                } else {
+                    key[j][i].setStatus(Button::Status::RELEASED);
+                }
+            }
+            *config.outputIORegister &= ~config.outputPinsMasks[i];
+            // debug_printf(" ");
+        }
+    }
+
+    void clearStates() {
+        for(int i = 0; i < outputs_number; i++) {
+            for(int j = 0; j < inputs_number; j++) {
+                key[j][i].clearState();
+            }
+        }
+    }
+
+public:
+    const uint8_t inputs_number  = XSize;
+    const uint8_t outputs_number = YSize;
+    ButtonBase key[XSize][YSize];
 
 private:
     const Config &config;
-    const uint8_t outputs_number = XSize;
-    const uint8_t inputs_number = YSize;
-
 };
 
 
@@ -75,5 +100,5 @@ protected:
 };
 */
 
-#endif // KEYBOARS_H
+#endif // KEYBOARDS_H
 

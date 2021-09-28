@@ -1,5 +1,7 @@
 #include "button.h"
 
+#include <steam/debug.h>
+
 
 uint8_t ButtonBase::isMod(Mod mod_to_check) {
     return ((int)mods & (int)mod_to_check);
@@ -23,20 +25,20 @@ void ButtonBase::reset() {
 }
 
 void ButtonBase::processPush() {
-    if(pushed_time == CLICK_DELAY) {
+    if(pushed_time == CLICK_DELAY_IN_TICKS) {
         state = CLICKED;
-        if(released_time > MULTIPLE_CLICKING_DELAY)
+        if(released_time > MULTIPLE_CLICK_DELAY_IN_TICKS)
             clicked_counter = 0;
-    } else if(pushed_time == PRESS_DELAY) {
+    } else if(pushed_time == PRESS_DELAY_IN_TICKS) {
         state = PRESSED;
-    } else if(pushed_time == LONG_PRESS_DELAY) {
+    } else if(pushed_time == LONG_PRESS_DELAY_IN_TICKS) {
         state = LONG_PRESSED;
-    } else if(pushed_time > TIMEOUT_DELAY) {
+    } else if(pushed_time > TIMEOUT_DELAY_IN_TICKS) {
         state = NO_STATE; // TimeOut
         setMod(TIMEOUT);
     }
 
-    if(pushed_time > CLAMPED_DELAY) {
+    if(pushed_time > CLAMPED_DELAY_IN_TICKS) {
         clamped_counter++;
         setMod(CLAMPED);
     }
@@ -45,11 +47,11 @@ void ButtonBase::processPush() {
 void ButtonBase::processRelease() {
     state = UNCERTAIN; // For values smaller then minimum
 
-    if(pushed_time > LONG_PRESS_DELAY) {
+    if(pushed_time > LONG_PRESS_DELAY_IN_TICKS) {
         state = LONG_PRESS_RELEASED;
-    } else if(pushed_time > PRESS_DELAY) {
+    } else if(pushed_time > PRESS_DELAY_IN_TICKS) {
         state = PRESS_RELEASED;
-    } else if(pushed_time > CLICK_DELAY) {
+    } else if(pushed_time > CLICK_DELAY_IN_TICKS) {
         state = CLICK_RELEASED;
 
         // Multiple clicking
@@ -68,7 +70,9 @@ void ButtonBase::processRelease() {
 }
 
 void ButtonBase::tick() {
-    if(status = Status::PUSHED) {
+    if(status == Status::PUSHED) {
+        // debug_printf("Pushed\n");
+
         if(!freezed) {
             pushed_time++;
             processPush();

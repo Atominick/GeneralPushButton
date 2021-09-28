@@ -1,8 +1,9 @@
 #include "keyboards.h"
 
 
-/************************************************************************************/
-template<int XSize, int YSize>
+
+/***********************************************************************************
+template <int XSize, int YSize>
 void MatrixKeyboard<XSize, YSize>::update() {
     uint8_t button_no = 0;    
     for(int i = 0; i < XSize; i++) {
@@ -18,6 +19,9 @@ void MatrixKeyboard<XSize, YSize>::update() {
         *config.outputIORegister &= ~config.inputPinsMasks[i];
     }
 }
+*/
+
+// template class MatrixKeyboard<3, 4>;
 
 /*
 void AnalogKeyboard::update() {

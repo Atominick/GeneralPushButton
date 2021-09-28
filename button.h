@@ -44,6 +44,7 @@
 #define MULTIPLE_CLICK_DELAY_IN_TICKS    MS_TO_TICKS(MULTIPLE_CLICK_DELAY)
 #define TIMEOUT_DELAY_IN_TICKS           MS_TO_TICKS(TIMEOUT_DELAY)
 
+
 class ButtonBase
 {
 public:
@@ -76,15 +77,15 @@ public:
         PUSHED
     };
 
-public:
-    ButtonBase();
-    
+public:    
     void setStatus(Status status) {
         this->status = status;
     }
+
     Status getStatus() {
         return status;
     }
+
     void freeze() {
         freezed = 1;
     }
