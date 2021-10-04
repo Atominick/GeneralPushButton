@@ -1,7 +1,5 @@
 #include "button.h"
 
-#include <steam/debug.h>
-
 
 uint8_t ButtonBase::isMod(Mod mod_to_check) {
     return ((int)mods & (int)mod_to_check);
@@ -45,8 +43,6 @@ void ButtonBase::processPush() {
 }
 
 void ButtonBase::processRelease() {
-    state = UNCERTAIN; // For values smaller then minimum
-
     if(pushed_time > LONG_PRESS_DELAY_IN_TICKS) {
         state = LONG_PRESS_RELEASED;
     } else if(pushed_time > PRESS_DELAY_IN_TICKS) {
@@ -63,16 +59,14 @@ void ButtonBase::processRelease() {
             setMod(TRIPLE_CLICKED);
             break;
         }
+    } else {
+        state = NO_STATE; // For values smaller then minimum
+        setMod(TIMEOUT);
     }
-    // } else {
-    //     clicked_counter = 0;
-    // }
 }
 
 void ButtonBase::tick() {
     if(status == Status::PUSHED) {
-        // debug_printf("Pushed\n");
-
         if(!freezed) {
             pushed_time++;
             processPush();

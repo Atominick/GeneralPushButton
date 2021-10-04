@@ -59,8 +59,6 @@ public:
         CLICK_RELEASED,
         PRESS_RELEASED,
         LONG_PRESS_RELEASED,
-        
-        UNCERTAIN,
     };
 
     enum Mod

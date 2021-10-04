@@ -2,21 +2,7 @@
 #ifndef KEYBOARDS_H
 #define KEYBOARDS_H
 
-#include <stdint.h>
 #include "button.h"
-
-#include <steam/debug.h>
-
-/*
-template <int XSize, int YSize>
-class KeyboardBase
-{
-public:
-    virtual void update();
-
-public:
-};
-*/
 
 template <int XSize, int YSize>
 class MatrixKeyboard
@@ -47,7 +33,6 @@ public:
                 }
             }
             *config.outputIORegister &= ~config.outputPinsMasks[i];
-            // debug_printf(" ");
         }
     }
 
@@ -69,18 +54,15 @@ private:
 };
 
 
+// TODO
 /***************************************************************************************
+template <int Discreteness>
 class AnalogKeyboard
 {
 public:
     struct Config {
-        uint8_t inputs_number;
-        uint8_t outputs_number;
-
-        volatile uint32_t *inputIORegister;
-        uint16_t *inputPinsMasks;
-        volatile uint32_t *outputIORegister;
-        uint16_t *outputPinsMasks;
+        volatile uint32_t *analogValuePtr;
+        uint16_t *keyValues;
     };
 
 public:
@@ -88,15 +70,17 @@ public:
         : config(config) 
         {}
 
-    virtual void initPins();
-    void update();
+    void update() {
+
+    }
 
 public:
-    // Every bit shows state of button in keyboard
-    uint64_t states = 0;
+    const uint8_t keys_number = Discreteness;
+    ButtonBase key[Discreteness];
 
 protected:
     const Config &config;
+    const uint16_t hysteresys;
 };
 */
 
