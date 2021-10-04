@@ -1,17 +1,17 @@
 # GeneralPushButton
-This lib will help to process push buttons. Supports almost every type of pressing and several keyboards types.
+This lib will help to process push buttons. It supports almost every type of pressing and several types of keyboards.
 
 ## Features
 - simple integration to any platform
-- optimized resources using 
-- time interval settings in ms
-- 3 types of press, separated by time
+- time interval settings in miliseconds
+- 3 different types of pressing
 - flexible keyboards setting
+- optimized resources using 
+- no dependecies
 
 ## Where to use?
-Every system where push buttons or their functional analogs are used and different press types is supported. The library was developed for embedded systems.
+Every system where push buttons or their functional analogs are used and different press types should be supported. The library was developed for embedded systems.
 
-----
 ## How to use?
 ### General instructions:
 1. Create objects of needed class.
@@ -31,11 +31,11 @@ Every system where push buttons or their functional analogs are used and differe
         MatrixKeyboard<3, 4> buttons(buttonsConfig);
 
 
-1. Periodically call 
+1. Periodically call method to update buttons state.
 
         tick(); // or update() for keyboards
 
-1. Define the frequency of periodical update function
+1. Define the frequency of periodical update function.
 
         #define BUTTON_TICKING_FREQUENCY
 
@@ -74,9 +74,9 @@ Every system where push buttons or their functional analogs are used and differe
         }
 
 ### Other
-- You can inverse button polarity by third param in initialization.
 - Time intervals can be redefined in your program
-- If your button processing programm lead to changing the way of button processing, you can use `Button::freeze();` to ignore any next state before releasing.
+- Button polarity inversing is available as third param in constructor.
+- If your button processing programm lead to changing the way of processing, you can use `Button::freeze();` to ignore any next state before releasing.
 
 ---
-## Feel free to contact me with any questions)
+### Feel free to contact me with any questions)
