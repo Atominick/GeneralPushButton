@@ -53,36 +53,5 @@ private:
     const Config &config;
 };
 
-
-// TODO
-/***************************************************************************************
-template <int Discreteness>
-class AnalogKeyboard
-{
-public:
-    struct Config {
-        volatile uint32_t *analogValuePtr;
-        uint16_t *keyValues;
-    };
-
-public:
-    AnalogKeyboard(const Config &config)
-        : config(config) 
-        {}
-
-    void update() {
-
-    }
-
-public:
-    const uint8_t keys_number = Discreteness;
-    ButtonBase key[Discreteness];
-
-protected:
-    const Config &config;
-    const uint16_t hysteresys;
-};
-*/
-
 #endif // KEYBOARDS_H
 
