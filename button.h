@@ -34,7 +34,7 @@
 #endif
 
 
-/***************************************************************************/
+/**************************** No need to modify this *********************************/
 #define MS_TO_TICKS(s) (int((float) s / (1000. / BUTTON_TICKING_FREQUENCY)))
 
 #define CLICK_DELAY_IN_TICKS             MS_TO_TICKS(CLICK_DELAY)
