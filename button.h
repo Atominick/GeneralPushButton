@@ -67,7 +67,8 @@ public:
         CLAMPED = 0x01,
         DOUBLE_CLICKED = 0x02,
         TRIPLE_CLICKED = 0x04,
-        TIMEOUT = 0x08
+        TIMEOUT = 0x08,
+        ANY = 0xFF
     };
 
     enum Status {
