@@ -4,6 +4,28 @@
 
 #include "button.h"
 
+
+struct KeyboardEvent {
+    KeyboardEvent(int key_index, Button::Event e): index(key_index), event(e) {};
+
+    int index;
+    Button::Event event;
+};
+
+
+/****************************************************************************/
+template <int Size>
+class Keyboard
+{
+public:
+    // Keyboard();
+
+private:
+    ButtonBase key[Size];
+};
+
+
+/****************************************************************************/
 template <int XSize, int YSize>
 class MatrixKeyboard
 {
@@ -18,6 +40,19 @@ public:
 public:
     MatrixKeyboard(const Config &config)
         : config(config) {}
+
+    KeyboardEvent getEvent() {
+        for(int i = 0; i < XSize; i++) {
+            for(int j = 0; j < YSize; j++) {
+                Button::Event new_e = key[i][j].getEvent();
+                if(new_e) {
+                    return KeyboardEvent((i*j), new_e);
+                }
+            }
+        }
+
+        return KeyboardEvent(0, Button::Event::NO_EVENT);
+    }
 
     // Can`t move to .cpp couse of C++ restrictions https://stackoverflow.com/questions/8752837/undefined-reference-to-template-class-constructor
     void update() {

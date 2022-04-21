@@ -1,28 +1,38 @@
+
 #include "button.h"
 
 
-uint8_t ButtonBase::isMod(Mod mod_to_check) {
-    return ((int)mods & (int)mod_to_check);
-}
+// uint8_t ButtonBase::isMod(Mod mod_to_check) {
+//     return ((int)mods & (int)mod_to_check);
+// }
 
-void ButtonBase::setMod(Mod mod_to_set) {
-    mods = (Mod) ((int)mod_to_set | (int)mods);
-}
+// void ButtonBase::setMod(Mod mod_to_set) {
+//     mods = (Mod) ((int)mod_to_set | (int)mods);
+// }
 
-void ButtonBase::clearState() {
-    state = State::NO_STATE;
-    mods = Mod::NO_MODS;
-}
+// void ButtonBase::clearState() {
+//     state = State::NO_STATE;
+//     mods = Mod::NO_MODS;
+// }
 
-void ButtonBase::reset() {
-    clamped_counter = 0;
-    released_time = 0;
-    pushed_time = 0;
-    freezed = 0;
-    // clearState();
-}
 
-void ButtonBase::processPush() {
+void ButtonBase::scanPushEvents() {
+    if(pushed_time == PRESS_DELAY_IN_TICKS) {
+        event_collection |= (uint16_t) Event::PRESSED;
+    } else if(pushed_time == CLICK_DELAY_IN_TICKS) {
+        event_collection |= (uint16_t) Event::CLICKED;
+    } else if(pushed_time == TIMEOUT_DELAY_IN_TICKS){
+        event_collection |= (uint16_t) Event::TIMEOUT;
+    }
+
+    if(pushed_time > CLAMPED_DELAY_IN_TICKS) {
+        if(clamped_divider++ > CLAMPED_PERIOD_IN_TICKS) {
+            event_collection |= (uint16_t) Event::CLAMPED;
+            clamped_divider = 0;
+        };
+    }
+
+/*
     if(pushed_time == CLICK_DELAY_IN_TICKS) {
         state = CLICKED;
         if(released_time > MULTIPLE_CLICK_DELAY_IN_TICKS)
@@ -40,9 +50,22 @@ void ButtonBase::processPush() {
         clamped_counter++;
         setMod(CLAMPED);
     }
-}
+*/
+}   
 
 void ButtonBase::processRelease() {
+    clamped_divider = 0;
+
+    if(pushed_time > PRESS_DELAY_IN_TICKS) {
+        event_collection |= (uint16_t) Event::PRESS_RELEASED;
+    } else if(pushed_time > CLICK_DELAY_IN_TICKS) {
+        event_collection |= (uint16_t) Event::CLICK_RELEASED;
+    } else if(pushed_time > TIMEOUT_DELAY_IN_TICKS) {
+        // Don`t do anything)
+        // event_collection |= (uint16_t) Event::TIMEOUT;
+    }
+
+/*
     if(pushed_time > LONG_PRESS_DELAY_IN_TICKS) {
         state = LONG_PRESS_RELEASED;
     } else if(pushed_time > PRESS_DELAY_IN_TICKS) {
@@ -63,15 +86,32 @@ void ButtonBase::processRelease() {
         state = NO_STATE; // For values smaller then minimum
         setMod(TIMEOUT);
     }
+    */
 }
 
 void ButtonBase::tick() {
+    if(status == Status::PUSHED) {
+        scanPushEvents();
+        pushed_time++;
+
+        if(released_time) {
+            released_time = 0;
+        }
+    } else { // Released
+        released_time++;
+
+        if(pushed_time) {
+            processRelease();
+            pushed_time = 0;
+        }
+    }
+
+/*
     if(status == Status::PUSHED) {
         if(!freezed) {
             pushed_time++;
             processPush();
         }
-    } else { // Released
         // Ignore last value
         if(freezed) {
             reset();
@@ -83,6 +123,16 @@ void ButtonBase::tick() {
             }
         }
     }
+*/
+}
+
+void ButtonBase::reset() {
+    // clamped_counter = 0;
+    released_time = 0;
+    pushed_time = 0;
+    freezed = 0;
+
+    // clearState();
 }
 
 
