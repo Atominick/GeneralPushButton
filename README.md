@@ -1,98 +1,82 @@
 # GeneralPushButton
-This lib will help to <span style="color:#8ae234">**process**</span> push buttons. It supports <span style="color:#8ae234">**almost every type of pressing**</span> and several types of keyboards.
+This lib will help to <span style="color:#8ae234">**process**</span> push buttons. It supports <span style="color:#8ae234">**multiple types of pressing**</span> and several types of keyboards.
 
 ![Animation with demonstration of work](https://gist.githubusercontent.com/Atominick/dfa3238cec5a6b6e55644635edfbaa78/raw/89d6af2e5e921c44c0fec06665a4ffb03f554c9e/GeneralPushButtonDemonstration.gif)
 
 *******
-## Features
+## Features:
+- 3 different types of pressing and releasing
 - time interval settings in miliseconds
 - simple integration to any platform
 - flexible keyboards configuration
-- 3 different types of pressing
-- optimized resources using 
+- optimized resources using
 - no dependecies needed
 
 ## Where to use?
-Every system where push buttons or their functional analogs are used and different press types should be supported. The library was developed <span style="color:#8ae234">**for embedded systems**</span>.
+Any system where push buttons or their functional analogs are used and different press types should be supported. The library was developed <span style="color:#8ae234">**for embedded systems**</span>.
 
 ## How to use?
-### General instructions:
-1. Add header (*unexpectedly*)
-    ```cpp
-   #include "button.h"
-   // or 
-   #include "keyboards.h"
-    ```
-1. Create objects of needed class.
-    ```cpp
-    // Simple button example
-    Button button(&(GPIOx->InputDataRegister), GPIO_IDR_ID0);
-    
-    // Keyboard example
-    uint16_t buttonsInputPins[] = { PIN_0, PIN_1 };
-    uint16_t buttonsOutputPins[] = { PIN_2, PIN_3 };
-    static const MatrixKeyboard<2, 2>::Config buttonsConfig = {
-        .inputIORegister = &(GPIOx->InputDataRegister),
-        .inputPinsMasks = buttonsInputPins, 
-        .outputIORegister = &(GPIOx->OutputDataRegister),
-        .outputPinsMasks = buttonsOutputPins
-    };
-    MatrixKeyboard<2, 2> buttons(buttonsConfig);
-    ```
 
-1. Periodically call method to update buttons state.
-    ```cpp
-    tick(); // or update() for keyboards
-    ```
+### General example (STM32):
 
-1. Define the frequency of periodical update function.
-    ```cpp
-    #define BUTTON_TICKING_FREQUENCY
-    ```
+```cpp
+#include <stm32f0xx.h>
+#include "keyboards.h"
 
-1. Process every button state in the way you want. As a rule in main loop to minimize delay in periodic interrrupt. For example:
-    ```cpp
-    inline void handle_button() {
-        /* State can be changed in most unsuitable moment.
-         This condition disable the chance of wiping state without processing */
-        if(button.isMod(Button::Mod::ANY) || button.state) {
-            if(button.isMod(Button::Mod::CLAMPED)) {
-                // Clamping
+#define TickRate 1000
+#define BUTTON_TICKING_FREQUENCY TickRate
+
+using namespace button_lib;
+
+
+SysTick_Config(F_CPU / TickRate);
+
+enum ButtonsNames {
+    LEFT_BTN  = 0,
+    OK_BTN    = 1,
+    RIGHT_BTN = 2,
+};
+
+Button buttons_array[] = {
+    Button(&(GPIOA->IDR), PIN_1),
+    Button(&(GPIOA->IDR), PIN_2),
+    Button(&(GPIOB->IDR), PIN_1, 0),
+};
+Keyboard buttons(buttons_array, sizeof(buttons_array) / sizeof(Button));
+
+while(1) {
+    // Other user code
+
+    // Events processing
+    KeyboardEvent ke = buttons.getEvent();
+    if(ke.event) {
+        if(ke.index == LEFT_BTN) {
+            if(ke.event == CLICKED or ke.event == CLAMPED) {
+                // "minus" user action
             }
-            
-            switch(button.state) {
-                case Button::State::CLICK_RELEASED:
-                    // Process simple click and/or double and triple.
-                    if(button.isMod(Button::Mod::TRIPLE_CLICKED)) {
-
-                    } else if(button.isMod(Button::Mod::DOUBLE_CLICKED) {
-
-                    }
-                break;
-
-                /* Other available states
-                case Button::State::PRESSED ...
-                                    LONG_PRESSED,
-                                    PRESS_RELEASED,
-                                    LONG_PRESS_RELEASED,
-                break;
-                */
-                
-                default:
-                break;
+        } else if(ke.index == OK_BTN) {
+            if(ke.event == CLICKED) {
+                // "ok" user action
+            } else if(ke.event == LONG_PRESS_RELEASED) {
+                // "menu" user action
             }
-            
-            /* Don`t forget to clear states!
-            Otherwise buttons will be processing forever. */
-            button.clearState();
+        } else if(ke.index == RIGHT_BTN) {
+            if(ke.event == CLICKED or ke.event == CLAMPED) {
+                // "plus" user action
+            }
         }
     }
-    ```
+}
+
+
+extern "C" void SysTick_Handler() {
+    buttons.update();
+}
+```
 
 ### Other
 - Time intervals can be redefined in your program (example: [`#define CLICK_DELAY 60`](https://github.com/Atominick/GeneralPushButton/blob/72abbfbeb159f3e31549ccf65802fc4856633518/button.h#L13) )
 - Button polarity inversing is available as third param in `Button` constructor.
-- If your button processing programm lead to changing the way of processing, you can use `Button::freeze();` to ignore any next state before releasing.
 
 ---
-### Feel free to contact me with any questions.
+### The lib is developing depending on my personal needs or user`s requests. Feel free to contact me with any questions and suggestions.

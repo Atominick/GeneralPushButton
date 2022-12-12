@@ -1,151 +1,126 @@
-
 #include "button.h"
+#include <steam/debug.h>
 
 
-// uint8_t ButtonBase::isMod(Mod mod_to_check) {
-//     return ((int)mods & (int)mod_to_check);
-// }
+namespace button_lib
+{
 
-// void ButtonBase::setMod(Mod mod_to_set) {
-//     mods = (Mod) ((int)mod_to_set | (int)mods);
-// }
-
-// void ButtonBase::clearState() {
-//     state = State::NO_STATE;
-//     mods = Mod::NO_MODS;
-// }
-
-
-void ButtonBase::scanPushEvents() {
-    if(pushed_time == PRESS_DELAY_IN_TICKS) {
-        event_collection |= (uint16_t) Event::PRESSED;
-    } else if(pushed_time == CLICK_DELAY_IN_TICKS) {
-        event_collection |= (uint16_t) Event::CLICKED;
-    } else if(pushed_time == TIMEOUT_DELAY_IN_TICKS){
-        event_collection |= (uint16_t) Event::TIMEOUT;
-    }
-
-    if(pushed_time > CLAMPED_DELAY_IN_TICKS) {
-        if(clamped_divider++ > CLAMPED_PERIOD_IN_TICKS) {
-            event_collection |= (uint16_t) Event::CLAMPED;
-            clamped_divider = 0;
-        };
-    }
-
-/*
-    if(pushed_time == CLICK_DELAY_IN_TICKS) {
-        state = CLICKED;
+    /**
+     * Executed only once when Status changed to PUSHED
+     **/
+    void ButtonBase::processPush() {
         if(released_time > MULTIPLE_CLICK_DELAY_IN_TICKS)
             clicked_counter = 0;
-    } else if(pushed_time == PRESS_DELAY_IN_TICKS) {
-        state = PRESSED;
-    } else if(pushed_time == LONG_PRESS_DELAY_IN_TICKS) {
-        state = LONG_PRESSED;
-    } else if(pushed_time > TIMEOUT_DELAY_IN_TICKS) {
-        state = NO_STATE; // TimeOut
-        setMod(TIMEOUT);
     }
 
-    if(pushed_time > CLAMPED_DELAY_IN_TICKS) {
-        clamped_counter++;
-        setMod(CLAMPED);
-    }
-*/
-}   
+    /**
+     * Executed every tick while Status remain PUSHED
+     **/
+    void ButtonBase::scanPushEvents() {
+        // Sorted by frequency of triggering
+        if(pushed_time == CLICK_DELAY_IN_TICKS) {
+            // Multiple clicking
+            clicked_counter++;
+            if(clicked_counter == 2)
+                event_collection |= (uint16_t)Event::DOUBLE_CLICKED;
+            else if(clicked_counter > 2)
+                event_collection |= (uint16_t)Event::MULTIPLE_CLICKED;
 
-void ButtonBase::processRelease() {
-    clamped_divider = 0;
-
-    if(pushed_time > PRESS_DELAY_IN_TICKS) {
-        event_collection |= (uint16_t) Event::PRESS_RELEASED;
-    } else if(pushed_time > CLICK_DELAY_IN_TICKS) {
-        event_collection |= (uint16_t) Event::CLICK_RELEASED;
-    } else if(pushed_time > TIMEOUT_DELAY_IN_TICKS) {
-        // Don`t do anything)
-        // event_collection |= (uint16_t) Event::TIMEOUT;
-    }
-
-/*
-    if(pushed_time > LONG_PRESS_DELAY_IN_TICKS) {
-        state = LONG_PRESS_RELEASED;
-    } else if(pushed_time > PRESS_DELAY_IN_TICKS) {
-        state = PRESS_RELEASED;
-    } else if(pushed_time > CLICK_DELAY_IN_TICKS) {
-        state = CLICK_RELEASED;
-
-        // Multiple clicking
-        switch(++clicked_counter) {
-        case 2:
-            setMod(DOUBLE_CLICKED);
-            break;
-        case 3:
-            setMod(TRIPLE_CLICKED);
-            break;
+            event_collection |= (uint16_t)Event::CLICKED;
+        } else if(pushed_time == PRESS_DELAY_IN_TICKS) {
+            event_collection |= (uint16_t)Event::PRESSED;
+        } else if(pushed_time == LONG_PRESS_DELAY_IN_TICKS) {
+            event_collection |= (uint16_t)Event::LONG_PRESSED;
+        } else if(pushed_time == TIMEOUT_DELAY_IN_TICKS) {
+            event_collection |= (uint16_t)Event::TIMEOUT;
         }
-    } else {
-        state = NO_STATE; // For values smaller then minimum
-        setMod(TIMEOUT);
-    }
-    */
-}
 
-void ButtonBase::tick() {
-    if(status == Status::PUSHED) {
-        scanPushEvents();
-        pushed_time++;
-
-        if(released_time) {
-            released_time = 0;
-        }
-    } else { // Released
-        released_time++;
-
-        if(pushed_time) {
-            processRelease();
-            pushed_time = 0;
-        }
-    }
-
-/*
-    if(status == Status::PUSHED) {
-        if(!freezed) {
-            pushed_time++;
-            processPush();
-        }
-        // Ignore last value
-        if(freezed) {
-            reset();
-        } else {
-            released_time++;
-            if(pushed_time) {
-                processRelease();
-                reset();
+        if(pushed_time > CLAMPED_DELAY_IN_TICKS) {
+            if(clamped_divider++ > CLAMPED_PERIOD_IN_TICKS) {
+                event_collection |= (uint16_t)Event::CLAMPED;
+                clamped_divider = 0;
             }
         }
     }
-*/
-}
-
-void ButtonBase::reset() {
-    // clamped_counter = 0;
-    released_time = 0;
-    pushed_time = 0;
-    freezed = 0;
-
-    // clearState();
-}
 
 
-/****************************************************************************************/
-Button::Button(volatile uint32_t *registerToCheck, const uint32_t registerMask, const uint8_t stateWhenOn)
-    : register_to_check(registerToCheck), register_mask(registerMask), state_when_on(stateWhenOn) {}
+    /**
+     * Executed every tick while Status remain RELEASED
+     **/
+    void ButtonBase::scanReleaseEvents() {}
 
-void Button::tick() {
-    if(!(*register_to_check & register_mask) ^ state_when_on) {
-        setStatus(PUSHED);
-    } else {
-        setStatus(RELEASED);
+    /**
+     * Executed only once when Status changed to RELEASED
+     **/
+    void ButtonBase::processRelease() {
+        clamped_divider = 0;
+
+        if(pushed_time > TIMEOUT_DELAY_IN_TICKS) {
+            // Don`t do anything :)
+        } else if(pushed_time > LONG_PRESS_DELAY_IN_TICKS) {
+            event_collection |= (uint16_t)Event::LONG_PRESS_RELEASED;
+        } else if(pushed_time > PRESS_DELAY_IN_TICKS) {
+            event_collection |= (uint16_t)Event::PRESS_RELEASED;
+        } else if(pushed_time > CLICK_DELAY_IN_TICKS) {
+            event_collection |= (uint16_t)Event::CLICK_RELEASED;
+        }
     }
 
-    ButtonBase::tick();
-}
+    void ButtonBase::setStatus(Status status) {
+        if(this->status != status) {
+            if(status == Status::PUSHED) {
+                processPush();
+                released_time = 0;
+            } else {
+                processRelease();
+                pushed_time = 0;
+            }
+
+            this->status = status;
+        }
+    }
+
+    void ButtonBase::tick() {
+        if(status == Status::PUSHED) {
+            scanPushEvents();
+            pushed_time++;
+        } else { // Released
+            scanReleaseEvents();
+            released_time++;
+        }
+    }
+
+    /**
+     * Should be called relatively frequently cause return only one event per time
+     **/
+    Event ButtonBase::getEvent() {
+        for(int i = 0; i < 16; i++) {
+            uint16_t new_e = event_collection & (1 << i);
+
+            if(new_e) {
+                event_collection &= ~new_e;
+                return (Event)new_e;
+            }
+        }
+
+        return Event::NO_EVENT;
+    }
+
+    void ButtonBase::reset() {
+        released_time = 0;
+        pushed_time = 0;
+    }
+
+
+    /****************************************************************************************/
+    void Button::tick() {
+        if(!(*register_ptr & register_mask) ^ clicked_state) {
+            setStatus(PUSHED);
+        } else {
+            setStatus(RELEASED);
+        }
+
+        ButtonBase::tick();
+    }
+
+} // namespace button_lib

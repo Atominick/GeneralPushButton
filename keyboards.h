@@ -1,27 +1,35 @@
 
-#ifndef KEYBOARDS_H
-#define KEYBOARDS_H
+#pragma once
 
 #include "button.h"
 
 
+namespace button_lib {
+
 struct KeyboardEvent {
-    KeyboardEvent(int key_index, Button::Event e): index(key_index), event(e) {};
+    KeyboardEvent(int key_index, Event e) : index(key_index), event(e){};
 
     int index;
-    Button::Event event;
+    Event event;
 };
 
 
 /****************************************************************************/
-template <int Size>
 class Keyboard
 {
 public:
-    // Keyboard();
+    Keyboard(Button *keys, const uint16_t keys_count) 
+        : keys_count(keys_count), key(keys) {}
+
+
+    KeyboardEvent getEvent();
+    void update();
 
 private:
-    ButtonBase key[Size];
+    const uint16_t keys_count;
+
+public:
+    Button *key;
 };
 
 
@@ -44,14 +52,14 @@ public:
     KeyboardEvent getEvent() {
         for(int i = 0; i < XSize; i++) {
             for(int j = 0; j < YSize; j++) {
-                Button::Event new_e = key[i][j].getEvent();
+                Event new_e = key[i][j].getEvent();
                 if(new_e) {
-                    return KeyboardEvent((i*j), new_e);
+                    return KeyboardEvent(((i + 1) * (j + 1)), new_e);
                 }
             }
         }
 
-        return KeyboardEvent(0, Button::Event::NO_EVENT);
+        return KeyboardEvent(0, Event::NO_EVENT);
     }
 
     // Can`t move to .cpp couse of C++ restrictions https://stackoverflow.com/questions/8752837/undefined-reference-to-template-class-constructor
@@ -71,16 +79,8 @@ public:
         }
     }
 
-    void clearStates() {
-        for(int i = 0; i < outputs_number; i++) {
-            for(int j = 0; j < inputs_number; j++) {
-                key[j][i].clearState();
-            }
-        }
-    }
-
 public:
-    const uint8_t inputs_number  = XSize;
+    const uint8_t inputs_number = XSize;
     const uint8_t outputs_number = YSize;
     ButtonBase key[XSize][YSize];
 
@@ -88,5 +88,4 @@ private:
     const Config &config;
 };
 
-#endif // KEYBOARDS_H
-
+} // namespace button_lib
