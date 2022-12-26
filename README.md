@@ -1,4 +1,7 @@
 # GeneralPushButton
+
+[![PlatformIO Registry](https://badges.registry.platformio.org/packages/atominick/library/GeneralPushButton.svg)](https://registry.platformio.org/libraries/atominick/GeneralPushButton)
+
 This lib will help to <span style="color:#8ae234">**process**</span> push buttons. It supports <span style="color:#8ae234">**multiple types of pressing**</span> and several types of keyboards.
 
 ![Animation with demonstration of work](https://gist.githubusercontent.com/Atominick/dfa3238cec5a6b6e55644635edfbaa78/raw/89d6af2e5e921c44c0fec06665a4ffb03f554c9e/GeneralPushButtonDemonstration.gif)
