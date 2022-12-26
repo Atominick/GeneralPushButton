@@ -16,67 +16,52 @@ This lib will help to <span style="color:#8ae234">**process**</span> push button
 Any system where push buttons or their functional analogs are used and different press types should be supported. The library was developed <span style="color:#8ae234">**for embedded systems**</span>.
 
 ## How to use?
+__(See examples)__
 
-### General example (STM32):
+### Getting Started
+After installing this library in your project (use namespace `general_button`)
 
 ```cpp
-#include <stm32f0xx.h>
 #include "keyboards.h"
 
-#define TickRate 1000
-#define BUTTON_TICKING_FREQUENCY TickRate
+using namespace general_button;
+```
 
-using namespace button_lib;
+### Initialize a `Button` object
+```cpp
+Button button0(&(GPIOA->IDR), PIN_1, false);
+```
 
-
-SysTick_Config(F_CPU / TickRate);
-
-enum ButtonsNames {
-    LEFT_BTN  = 0,
-    OK_BTN    = 1,
-    RIGHT_BTN = 2,
-};
-
-Button buttons_array[] = {
-    Button(&(GPIOA->IDR), PIN_1),
-    Button(&(GPIOA->IDR), PIN_2),
-    Button(&(GPIOB->IDR), PIN_1, 0),
-};
-Keyboard buttons(buttons_array, sizeof(buttons_array) / sizeof(Button));
-
+### Process events
+```cpp
 while(1) {
-    // Other user code
-
-    // Events processing
-    KeyboardEvent ke = buttons.getEvent();
-    if(ke.event) {
-        if(ke.index == LEFT_BTN) {
-            if(ke.event == CLICKED or ke.event == CLAMPED) {
-                // "minus" user action
-            }
-        } else if(ke.index == OK_BTN) {
-            if(ke.event == CLICKED) {
-                // "ok" user action
-            } else if(ke.event == LONG_PRESS_RELEASED) {
-                // "menu" user action
-            }
-        } else if(ke.index == RIGHT_BTN) {
-            if(ke.event == CLICKED or ke.event == CLAMPED) {
-                // "plus" user action
-            }
+    Event e = button0.getEvent();
+    if(e) {
+        if(e == CLICKED) {
+            // "ok" click action
         }
     }
+
+    // ...
 }
+```
 
+### Don't forget to `tick()`!
+In order for `Button` to work correctly, you must call `tick()` on __each button instance__ or keyboard. If you're not getting any button events, this is probably why.
 
+```cpp
 extern "C" void SysTick_Handler() {
-    buttons.update();
+    button0.tick();
+
+    // Do other things...
 }
 ```
 
 ### Other
-- Time intervals can be redefined in your program (example: [`#define CLICK_DELAY 60`](https://github.com/Atominick/GeneralPushButton/blob/72abbfbeb159f3e31549ccf65802fc4856633518/button.h#L13) )
-- Button polarity inversing is available as third param in `Button` constructor.
+- Set your own ticking frequence `#define BUTTON_TICKING_FREQUENCY TickRate` for correct timing
+- Time intervals can be redefined in your program: `#define CLICK_DELAY xx`
+- Button polarity inversing is available as third param in `Button` constructor
+
 
 ---
 ### The lib is developing depending on my personal needs or user`s requests. Feel free to contact me with any questions and suggestions.

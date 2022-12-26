@@ -4,7 +4,7 @@
 #include "button.h"
 
 
-namespace button_lib {
+namespace general_button {
 
 struct KeyboardEvent {
     KeyboardEvent(int key_index, Event e) : index(key_index), event(e){};
@@ -88,4 +88,4 @@ private:
     const Config &config;
 };
 
-} // namespace button_lib
+} // namespace general_button

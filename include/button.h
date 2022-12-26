@@ -55,7 +55,7 @@ DO NOT FORGET to set your own period of tick() function calling
 #define TIMEOUT_DELAY_IN_TICKS MS_TO_TICKS(TIMEOUT_DELAY)
 
 
-namespace button_lib
+namespace general_button
 {
 
     // Is received when user makes some end action(like releasing a button)
@@ -83,14 +83,12 @@ namespace button_lib
 
     class ButtonBase
     {
-        // Status - I/O
-
     public:
+        //I/O
         enum Status {
             RELEASED = 0,
             PUSHED = 1
         };
-
 
     public:
         void setStatus(Status status);
@@ -135,4 +133,4 @@ namespace button_lib
         const uint8_t clicked_state;
     };
 
-} // namespace button_lib
+} // namespace general_button

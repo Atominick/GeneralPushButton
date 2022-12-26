@@ -1,8 +1,7 @@
 #include "button.h"
-#include <steam/debug.h>
 
 
-namespace button_lib
+namespace general_button
 {
 
     /**
@@ -123,4 +122,4 @@ namespace button_lib
         ButtonBase::tick();
     }
 
-} // namespace button_lib
+} // namespace general_button
